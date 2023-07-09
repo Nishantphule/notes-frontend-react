@@ -1,113 +1,72 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import './App.css';
-import { Note } from './Note';
-import axios from 'axios';
+// import { Note } from './Note';
+import { Link, Route, Routes } from 'react-router-dom';
+import { Home } from './Home';
+import { Notes } from './Notes';
 
-function App() {
-  const [notes, setNotes] = useState([])
-  const [newNote, setNewNote] = useState("")
-  const [showAll, setShowAll] = useState(true)
+function AddNote(){
+  
+  const [newNote,setNewNote] = useState({});
 
-  // make the api call
-  useEffect(() => {
-    // axios
-    axios
-      .get('https://notes-b43we-node.onrender.com/api/notes')
-      .then((res) => {
-        setNotes(res.data)
-      })
-  }, [notes])
-
-
-  // create
+  
   const addNote = (e) => {
     e.preventDefault();
-
-    const newNoteObj = {
-      id: notes.length + 1,
-      content: newNote,
-      important: Math.random() < 0.5,
-    }
-
-    // setNotes([...notes, newNoteObj])
-
-    // set note using axios
-    axios
-      .post("https://notes-b43we-node.onrender.com/api/notes", newNoteObj)
-      .then((res) => {
-        setNotes([...notes, res.data])
-      })
-
-    setNewNote("")
+    const data = {}
+    Array.from(e.target.elements).forEach((element) => {
+      if(element.name!==""){
+        data[element.name] = element.value;
+      }
+    });
+    setNewNote(data)
+    console.log(newNote)
   }
-
-
-  // update
-  const toggleImp = (id) => {
-    const url = `https://notes-b43we-node.onrender.com/api/notes/${id}`;
-    const note = notes.find(note => note.id === id)
-    const changeImp = {
-      ...note,
-      important: !note.important
-    };
-
-    axios
-      .put(url, changeImp)
-      .then((res) => {
-        const updated = notes.map(note => {
-
-          if (note.id === id) {
-            return res.data
-          }
-          return note
-        });
-
-        setNotes(updated)
-      })
-  }
-
-
-  // detele
-  const deleteNote = (id) => {
-    const url = `https://notes-b43we-node.onrender.com/api/notes/${id}`;
-    axios
-      .delete(url)
-      .then((res) => {
-        const updated = notes.filter(note => note.id !== id)
-        setNotes(updated)
-      })
-  }
-
-  const handleNoteChange = (e) => {
-    setNewNote(e.target.value)
-  }
-
-
   return (
-    <div className="App">
-      <h1>Notes</h1>
-      <button onClick={() => setShowAll(!showAll)}>
-        show {showAll ? "important" : "all"}
-      </button>
-      <ul>
-        {
-          showAll
-
-            ? notes
-              .map((note) => <Note key={note.id} note={note} toggleImp={toggleImp} deleteNote={deleteNote} />)
-
-            : notes
-              .filter((note) => note.important)
-              .map((note) => <Note key={note.id} note={note} toggleImp={toggleImp} deleteNote={deleteNote} />)
-
-        }
-      </ul>
-
+    <div>
+      <h1>Create A New Note</h1>
+      
       <form onSubmit={addNote}>
-        <input value={newNote} onChange={handleNoteChange} placeholder='a new note...' />
-        <button type='submit'>Save</button>
+        <input placeholder='type a new note...' name='content'></input>
+        <br/>
+        <br/>
+        <label>Is Important:</label>
+        <select name='important'>
+          <option value="">--Select an option--</option>
+          <option value={true}>Yes</option>
+          <option value={false}>No</option>
+        </select>
+        <br/>
+        <br/>
+        <button type='submit'>Add Note</button>
       </form>
     </div>
+  )
+}
+
+
+function App() {
+  return (
+    <div className="App">
+      <div className='navBar'>
+        <div>
+          <Link to="/">Home</Link>
+        </div>
+        <div>
+          <Link to="/notes">Read notes</Link>
+        </div>
+        <div>
+          <Link to="/addNote">Read notes</Link>
+        </div>
+      </div>
+
+
+      <Routes>
+        <Route path='/' element={<Home />} />
+        <Route path='/notes' element={<Notes />} />
+        <Route path='/addNote' element={<AddNote />} />
+      </Routes>
+    </div>
+
   );
 }
 
